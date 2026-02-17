@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Crypto Widget</title>
+<title>Crypto Wallet Widget</title>
 <style>
 body {
   margin: 0;
@@ -12,15 +12,12 @@ body {
 }
 
 .container {
-  max-width: 750px;
+  max-width: 800px;
   margin: 30px auto;
   padding: 10px;
 }
 
 .card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   background: #1e293b;
   padding: 16px;
   margin-bottom: 14px;
@@ -33,10 +30,10 @@ body {
   transform: translateY(-3px);
 }
 
-.left {
+.top-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .logo {
@@ -44,48 +41,48 @@ body {
   height: 42px;
 }
 
-.info {
-  display: flex;
-  flex-direction: column;
-}
-
-.symbol {
+.coin-name {
   font-weight: 600;
-  font-size: 17px;
+  font-size: 18px;
 }
 
 .price {
   font-size: 14px;
   opacity: 0.85;
+  margin-left: auto;
 }
 
-.balance {
+.address {
+  margin: 8px 0;
   font-size: 14px;
-  margin-top: 4px;
+  word-break: break-all;
+  background: #0f172a;
+  padding: 4px 8px;
+  border-radius: 8px;
 }
 
-.value {
-  font-size: 15px;
-  font-weight: 600;
-  margin-top: 4px;
-  color: #38bdf8;
+.buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
 }
 
 button {
-  background: #3b82f6;
-  border: none;
+  background: transparent;
+  border: 2px solid #3b82f6;
   color: white;
-  padding: 7px 12px;
+  padding: 6px 12px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 13px;
+  transition: background 0.2s, color 0.2s;
 }
 
 button:hover {
   background: #2563eb;
+  color: white;
 }
 
-/* Footer copyright */
 .footer {
   position: fixed;
   bottom: 10px;
@@ -101,97 +98,132 @@ button:hover {
 <div class="footer">©️SkeletalPanda</div>
 
 <script>
-// Placeholder wallet addresses (replace later)
+// Add your wallet addresses here
 const ADDRESSES = {
-  solana: "",
-  ethereum: "",
-  bitcoin: "",
-  binancecoin: "",
-  dogecoin: "",
-  litecoin: "",
-  tron: "",
-  usdt_bep20: "" // Add your BEP20 USDT address here
+  bitcoin: "YOUR_BTC_ADDRESS",
+  ethereum: "YOUR_ETH_ADDRESS",
+  litecoin: "YOUR_LTC_ADDRESS",
+  dogecoin: "YOUR_DOGE_ADDRESS",
+  tron: "YOUR_TRX_ADDRESS",
+  solana: "YOUR_SOL_ADDRESS",
+  xrp: { address: "YOUR_XRP_ADDRESS", tag: "YOUR_XRP_TAG" },
+  xmr: "YOUR_XMR_ADDRESS",
+  shib: "YOUR_ETH_ADDRESS",
+  ada: "YOUR_ADA_ADDRESS",
+  pepe: "YOUR_ETH_ADDRESS"
 };
 
 const SYMBOLS = {
-  solana: "SOL",
-  ethereum: "ETH",
   bitcoin: "BTC",
-  binancecoin: "BNB",
-  dogecoin: "DOGE",
+  ethereum: "ETH",
   litecoin: "LTC",
+  dogecoin: "DOGE",
   tron: "TRX",
-  usdt_bep20: "USDT(BEP20)"
+  solana: "SOL",
+  xrp: "XRP",
+  xmr: "XMR",
+  shib: "SHIB",
+  ada: "ADA",
+  pepe: "PEPE"
 };
 
-// Fetch live prices from CoinGecko
+const EXPLORERS = {
+  bitcoin: (addr) => `https://www.blockchain.com/btc/address/${addr}`,
+  ethereum: (addr) => `https://etherscan.io/address/${addr}`,
+  litecoin: (addr) => `https://blockchair.com/litecoin/address/${addr}`,
+  dogecoin: (addr) => `https://blockchair.com/dogecoin/address/${addr}`,
+  tron: (addr) => `https://tronscan.org/#/address/${addr}`,
+  solana: (addr) => `https://solscan.io/account/${addr}`,
+  xrp: (addrObj) => `https://xrpscan.com/account/${addrObj.address}`,
+  xmr: (addr) => `https://xmrchain.net/search?value=${addr}`,
+  shib: (addr) => `https://etherscan.io/address/${addr}`,
+  ada: (addr) => `https://cardanoscan.io/address/${addr}`,
+  pepe: (addr) => `https://etherscan.io/address/${addr}`
+};
+
+// Coins tracked on CoinGecko
+const COINGECKO_IDS = {
+  bitcoin: "bitcoin",
+  ethereum: "ethereum",
+  litecoin: "litecoin",
+  dogecoin: "dogecoin",
+  tron: "tron",
+  solana: "solana",
+  xrp: "ripple",
+  xmr: "monero",
+  shib: "shiba-inu",
+  ada: "cardano",
+  pepe: "pepe"
+};
+
+// Fetch prices
 async function fetchPrices() {
+  const ids = Object.values(COINGECKO_IDS).join(",");
   const res = await fetch(
-    `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=solana,ethereum,bitcoin,binancecoin,dogecoin,litecoin,tron,tether`
+    `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`
   );
   const data = await res.json();
-
-  // Map Tether to usdt_bep20 key
+  // Map back to our keys
   return data.map(coin => {
-    if (coin.id === "tether") coin.id = "usdt_bep20";
+    for (const key in COINGECKO_IDS) {
+      if (COINGECKO_IDS[key] === coin.id) {
+        coin.id = key;
+      }
+    }
     return coin;
   });
 }
 
-// Fake balances for placeholder mode (all 0)
-async function fetchBalances() {
-  const balances = {};
-  for (const key of Object.keys(ADDRESSES)) {
-    balances[key] = 0;
-  }
-  return balances;
-}
-
-// Copy wallet address to clipboard
-function copyAddress(address) {
-  if (!address) {
-    alert("No wallet address set yet!");
-    return;
-  }
-  navigator.clipboard.writeText(address);
-  alert("Address copied!");
+// Copy wallet address
+function copyAddress(addr, tag) {
+  let full = addr;
+  if (tag) full += ` (Tag: ${tag})`;
+  navigator.clipboard.writeText(full);
+  alert("Copied!");
 }
 
 // Update the widget
 async function update() {
   const prices = await fetchPrices();
-  const balances = await fetchBalances();
-
   const container = document.getElementById("cryptoContainer");
   container.innerHTML = "";
 
   prices.forEach(coin => {
-    const bal = balances[coin.id] || 0;
-    const usdValue = bal * coin.current_price;
+    const addrObj = ADDRESSES[coin.id];
+    let displayAddress = "";
+    let copyFunc = null;
+
+    if (coin.id === "xrp") {
+      displayAddress = `${addrObj.address} (Tag: ${addrObj.tag})`;
+      copyFunc = () => copyAddress(addrObj.address, addrObj.tag);
+    } else {
+      displayAddress = addrObj;
+      copyFunc = () => copyAddress(addrObj);
+    }
 
     const card = document.createElement("div");
     card.className = "card";
 
     card.innerHTML = `
-      <div class="left">
+      <div class="top-row">
         <img class="logo" src="${coin.image}" alt="${SYMBOLS[coin.id]} logo">
-        <div class="info">
-          <div class="symbol">${SYMBOLS[coin.id]}</div>
-          <div class="price">Price: $${coin.current_price.toLocaleString()}</div>
-          <div class="balance">${bal.toFixed(6)} ${SYMBOLS[coin.id]}</div>
-          <div class="value">$${usdValue.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2})}</div>
-        </div>
+        <div class="coin-name">${SYMBOLS[coin.id]}</div>
+        <div class="price">$${coin.current_price.toLocaleString()}</div>
       </div>
-      <button onclick="copyAddress('${ADDRESSES[coin.id]}')">Copy</button>
+      <div class="address">${displayAddress}</div>
+      <div class="buttons">
+        <button onclick="(${copyFunc.toString()})()">Copy</button>
+        <button onclick="window.open('${EXPLORERS[coin.id](addrObj)}','_blank')">Check Balance</button>
+      </div>
     `;
 
     container.appendChild(card);
   });
 }
 
-// Initial load + auto-update every 30 seconds
+// Initial load + auto-update every 10 seconds
 update();
-setInterval(update, 30000);
+setInterval(update, 10000);
 </script>
 
 </body>
