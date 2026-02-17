@@ -18,6 +18,8 @@ body {
 }
 
 .card {
+  display: flex;
+  flex-direction: column;
   background: #1e293b;
   padding: 16px;
   margin-bottom: 14px;
@@ -32,32 +34,39 @@ body {
 
 .top-row {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 16px;
 }
 
 .logo {
-  width: 42px;
-  height: 42px;
+  width: 60px;
+  height: 60px;
+}
+
+.coin-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .coin-name {
   font-weight: 600;
   font-size: 18px;
+  margin-bottom: 6px;
 }
 
 .price {
-  font-size: 14px;
-  opacity: 0.85;
-  margin-left: auto;
+  font-size: 20px;
+  font-weight: 700;
+  color: #38bdf8;
 }
 
 .address {
-  margin: 8px 0;
+  margin: 10px 0;
   font-size: 14px;
   word-break: break-all;
   background: #0f172a;
-  padding: 4px 8px;
+  padding: 6px 8px;
   border-radius: 8px;
 }
 
@@ -98,7 +107,7 @@ button:hover {
 <div class="footer">©️SkeletalPanda</div>
 
 <script>
-// Add your wallet addresses here
+// Your wallet addresses here
 const ADDRESSES = {
   bitcoin: "YOUR_BTC_ADDRESS",
   ethereum: "YOUR_ETH_ADDRESS",
@@ -166,9 +175,7 @@ async function fetchPrices() {
   // Map back to our keys
   return data.map(coin => {
     for (const key in COINGECKO_IDS) {
-      if (COINGECKO_IDS[key] === coin.id) {
-        coin.id = key;
-      }
+      if (COINGECKO_IDS[key] === coin.id) coin.id = key;
     }
     return coin;
   });
@@ -207,8 +214,10 @@ async function update() {
     card.innerHTML = `
       <div class="top-row">
         <img class="logo" src="${coin.image}" alt="${SYMBOLS[coin.id]} logo">
-        <div class="coin-name">${SYMBOLS[coin.id]}</div>
-        <div class="price">$${coin.current_price.toLocaleString()}</div>
+        <div class="coin-info">
+          <div class="coin-name">${SYMBOLS[coin.id]}</div>
+          <div class="price">$${coin.current_price.toLocaleString()}</div>
+        </div>
       </div>
       <div class="address">${displayAddress}</div>
       <div class="buttons">
