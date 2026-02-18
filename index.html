@@ -111,58 +111,42 @@ button:hover {
 const ADDRESSES = {
   bitcoin: "YOUR_BTC_ADDRESS",
   ethereum: "YOUR_ETH_ADDRESS",
+  binancecoin: "YOUR_BNB_ADDRESS",
+  solana: "YOUR_SOL_ADDRESS",
   litecoin: "YOUR_LTC_ADDRESS",
   dogecoin: "YOUR_DOGE_ADDRESS",
-  tron: "YOUR_TRX_ADDRESS",
-  solana: "YOUR_SOL_ADDRESS",
-  xrp: { address: "YOUR_XRP_ADDRESS", tag: "YOUR_XRP_TAG" },
-  xmr: "YOUR_XMR_ADDRESS",
-  shib: "YOUR_ETH_ADDRESS",
-  ada: "YOUR_ADA_ADDRESS",
-  pepe: "YOUR_ETH_ADDRESS"
+  tron: "YOUR_TRX_ADDRESS"
 };
 
 const SYMBOLS = {
   bitcoin: "BTC",
   ethereum: "ETH",
+  binancecoin: "BNB",
+  solana: "SOL",
   litecoin: "LTC",
   dogecoin: "DOGE",
-  tron: "TRX",
-  solana: "SOL",
-  xrp: "XRP",
-  xmr: "XMR",
-  shib: "SHIB",
-  ada: "ADA",
-  pepe: "PEPE"
+  tron: "TRX"
 };
 
 const EXPLORERS = {
   bitcoin: (addr) => `https://www.blockchain.com/btc/address/${addr}`,
   ethereum: (addr) => `https://etherscan.io/address/${addr}`,
+  binancecoin: (addr) => `https://bscscan.com/address/${addr}`,
+  solana: (addr) => `https://solscan.io/account/${addr}`,
   litecoin: (addr) => `https://blockchair.com/litecoin/address/${addr}`,
   dogecoin: (addr) => `https://blockchair.com/dogecoin/address/${addr}`,
-  tron: (addr) => `https://tronscan.org/#/address/${addr}`,
-  solana: (addr) => `https://solscan.io/account/${addr}`,
-  xrp: (addrObj) => `https://xrpscan.com/account/${addrObj.address}`,
-  xmr: (addr) => `https://xmrchain.net/search?value=${addr}`,
-  shib: (addr) => `https://etherscan.io/address/${addr}`,
-  ada: (addr) => `https://cardanoscan.io/address/${addr}`,
-  pepe: (addr) => `https://etherscan.io/address/${addr}`
+  tron: (addr) => `https://tronscan.org/#/address/${addr}`
 };
 
 // Coins tracked on CoinGecko
 const COINGECKO_IDS = {
   bitcoin: "bitcoin",
   ethereum: "ethereum",
+  binancecoin: "binancecoin",
+  solana: "solana",
   litecoin: "litecoin",
   dogecoin: "dogecoin",
-  tron: "tron",
-  solana: "solana",
-  xrp: "ripple",
-  xmr: "monero",
-  shib: "shiba-inu",
-  ada: "cardano",
-  pepe: "pepe"
+  tron: "tron"
 };
 
 // Fetch prices
@@ -172,7 +156,7 @@ async function fetchPrices() {
     `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`
   );
   const data = await res.json();
-  // Map back to our keys
+
   return data.map(coin => {
     for (const key in COINGECKO_IDS) {
       if (COINGECKO_IDS[key] === coin.id) coin.id = key;
@@ -182,10 +166,8 @@ async function fetchPrices() {
 }
 
 // Copy wallet address
-function copyAddress(addr, tag) {
-  let full = addr;
-  if (tag) full += ` (Tag: ${tag})`;
-  navigator.clipboard.writeText(full);
+function copyAddress(addr) {
+  navigator.clipboard.writeText(addr);
   alert("Copied!");
 }
 
@@ -196,17 +178,7 @@ async function update() {
   container.innerHTML = "";
 
   prices.forEach(coin => {
-    const addrObj = ADDRESSES[coin.id];
-    let displayAddress = "";
-    let copyFunc = null;
-
-    if (coin.id === "xrp") {
-      displayAddress = `${addrObj.address} (Tag: ${addrObj.tag})`;
-      copyFunc = () => copyAddress(addrObj.address, addrObj.tag);
-    } else {
-      displayAddress = addrObj;
-      copyFunc = () => copyAddress(addrObj);
-    }
+    const addr = ADDRESSES[coin.id];
 
     const card = document.createElement("div");
     card.className = "card";
@@ -219,10 +191,10 @@ async function update() {
           <div class="price">$${coin.current_price.toLocaleString()}</div>
         </div>
       </div>
-      <div class="address">${displayAddress}</div>
+      <div class="address">${addr}</div>
       <div class="buttons">
-        <button onclick="(${copyFunc.toString()})()">Copy</button>
-        <button onclick="window.open('${EXPLORERS[coin.id](addrObj)}','_blank')">Check Balance</button>
+        <button onclick="copyAddress('${addr}')">Copy</button>
+        <button onclick="window.open('${EXPLORERS[coin.id](addr)}','_blank')">Check Balance</button>
       </div>
     `;
 
